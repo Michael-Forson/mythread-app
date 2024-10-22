@@ -26,7 +26,7 @@ const RegisterScreen = ({ navigation }) => {
       password: password,
     };
     axios
-      .post("http://10.0.2.2:3003/api/v1/register", user)
+      .post(`${process.env.API_BASE_URI}/register`, user)
       .then((response) => {
         console.log(response);
         Alert.alert(
@@ -36,6 +36,7 @@ const RegisterScreen = ({ navigation }) => {
         setName("");
         setEmail("");
         setPassword("");
+        navigation.navigate("Login");
       })
       .catch((error) => {
         Alert.alert(

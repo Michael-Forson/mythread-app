@@ -4,6 +4,7 @@ const Post = require("../models/post");
 const User = require("../models/user");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
+const jwt = require("jsonwebtoken");
 
 router.post("/register", async (req, res) => {
   try {
@@ -19,7 +20,7 @@ router.post("/register", async (req, res) => {
     await newUser.save();
     //sent the verificaiton email
     sendVerificationEmail(newUser.email, newUser.verificationToken);
-    
+
     res.status(200).json({ message: "Registration successful" });
   } catch (error) {
     console.log("error registering user", error);
@@ -67,7 +68,7 @@ const generateSecretKey = () => {
   const secretKey = crypto.randomBytes(32).toString("hex");
   return secretKey;
 };
-const secretKey = generateSecretKey;
+const secretKey = generateSecretKey();
 
 router.post("/login", async (req, res) => {
   try {
@@ -78,10 +79,10 @@ router.post("/login", async (req, res) => {
         .status(404)
         .json({ message: "Invalid Logins,Please Register" });
     }
-    if (user.passowrd != password) {
+    if (user.password != password) {
       return res.status(404).json({ message: "Invalid password" });
     }
-    const token = jwt.sign({ userId: user._id }, secret);
+    const token = jwt.sign({ userId: user._id }, secretKey);
     res.status(200).json({ token });
   } catch (error) {
     res.status(500).json({ message: "Login failed" });

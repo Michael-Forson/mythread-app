@@ -7,15 +7,51 @@ import {
   KeyboardAvoidingView,
   TextInput,
   Pressable,
+  Alert,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import threadicon from "../assets/ThreadsLogo.png";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRoute } from "@react-navigation/native";
 //import { useNavigation } from "@react-navigation/native";
 const LoginScreen = ({ navigation }) => {
-  const { email, setEmail } = useState("");
-  const { password, setPassword } = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      try {
+        const token = await AsyncStorage.getItem("authToken");
+        if (token) {
+          navigation.replace("Main");
+        }
+      } catch (error) {
+        console.log("error", error);
+      }
+    };
+
+    checkLoginStatus();
+  }, []);
+  const handleLogin = () => {
+    const user = {
+      email: email,
+      password: password,
+    };
+    axios
+      .post(`${process.env.API_BASE_URI}/login`, user)
+      .then((response) => {
+        console.log(response);
+        const token = response.data.token;
+        AsyncStorage.setItem("authToken", token);
+        navigation.replace("Home");
+      })
+      .catch((error) => {
+        Alert.alert("Login error");
+        console.log(error.message);
+      });
+  };
   // const navigation = useNavigation();
   return (
     <SafeAreaView
@@ -115,6 +151,7 @@ const LoginScreen = ({ navigation }) => {
           </View>
         </View>
         <Pressable
+          onPress={handleLogin}
           style={{
             width: 200,
             backgroundColor: "black",
